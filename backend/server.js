@@ -8,9 +8,9 @@ const port = process.env.PORT || 8080;
 
 require("dotenv").config();
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+// app.get("/", (req, res) => {
+//   res.send("Hello World!");
+// });
 
 app.use(express.json());
 app.use(cors());

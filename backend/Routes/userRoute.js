@@ -1,61 +1,68 @@
-const {User} = require('../model/user');
-const express = require('express');
+const User = require("../model/user");
+const express = require("express");
+const route = express.Router();
 
-const router = express.Router();
-
-router.post('/users', async (req, res) => {
+// GET all users
+route.get("/", async (req, res) => {
     try {
-        const user = new User(req.body);
-        await user.save();
-        res.status(201).send(user);
-    } catch (error) {
-        res.status(400).send(error);
+        const result = await User.find();
+        res.status(200).json({ message: "Get all data", result });
+    } catch (err) {
+        res.status(500).json({ message: "Server Error", error: err.message });
     }
 });
 
-router.get('/users', async (req, res) => {
+// CREATE a new user
+route.post("/create", async (req, res) => {
     try {
-        const users = await User.find();
-        res.status(200).send(users);
-    } catch (error) {
-        res.status(500).send(error);
-    }
-});
-router.get('/users/:id', async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id);
-        if (!user) {
-            return res.status(404).send();
+        const { name, email, age } = req.body;
+
+        if (!name || !email || !age) {
+            return res.status(400).json({ message: "All fields are required" });
         }
 
-        res.status(200).send(user);
-    } catch (error) {
-        res.status(500).send(error);
+        const result = new User({ name, email, age });
+        await result.save();
+
+        res.status(201).json({ message: "Successfully Registered", result });
+    } catch (err) {
+        res.status(500).json({ message: "Server Error", error: err.message });
     }
 });
 
-router.put('/users/:id', async (req, res) => {
+// UPDATE user by ID
+route.put("/:id", async (req, res) => {
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!user) {
-            return res.status(404).send();
+        const { id } = req.params;
+        const { name, email, age } = req.body;
+
+        const result = await User.findByIdAndUpdate(id, { name, email, age }, { new: true });
+
+        if (!result) {
+            return res.status(404).json({ message: "User not found" });
         }
-        res.status(200).json({message: "User updated successfully", user });
-    } catch (error) {
-        res.status(500).send(error);
+
+        res.status(200).json({ message: "User updated successfully", result });
+    } catch (err) {
+        res.status(500).json({ message: "Server Error", error: err.message });
     }
 });
 
-router.delete('/users/:id', async (req, res) => {
+// DELETE user by ID
+route.delete("/:id", async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id);
-        if (!user) {
-            return res.status(404).send();
+        const { id } = req.params;
+
+        const result = await User.findByIdAndDelete(id);
+
+        if (!result) {
+            return res.status(404).json({ message: "User not found" });
         }
-        res.status(200).json({message: "User deleted successfully"});
-    } catch (error) {
-        res.status(500).send(error);
+
+        res.status(200).json({ message: "User deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Server Error", error: err.message });
     }
 });
 
-module.exports = router;
+module.exports = route;
